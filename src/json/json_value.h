@@ -2,6 +2,9 @@
 #define JSON_VALUE_H
 
 #include "../global.h"
+#include "../core/variant.h"
+#include <type_traits>
+
 #include <string>
 
 TOOSKA_BEGIN_NAMESPACE(core)
@@ -14,17 +17,16 @@ class token_serializer_writer;
 TOOSKA_END_NAMESPACE
 
 TOOSKA_BEGIN_NAMESPACE(json)
-class json_array;
-class json_object;
-class json_value
+class array;
+class object;
+
+class value
 {
-    int _n;
-    float _f;
-    bool _b;
-    std::string _s;
+    tooska::core::variant _data;
 
 public:
-    enum class type_t{
+//    std::string _s;
+    enum class type_t {
         invalid,
         bool_t,
         int_t,
@@ -33,33 +35,19 @@ public:
         object_t,
         array_t
     };
-    json_value();
-    json_value(const bool &b);
-    json_value(const int &n);
-    json_value(const float &f);
-    json_value(const std::string &value);
-    virtual ~json_value();
+    value();
+    value(const tooska::core::variant &value);
+    virtual ~value();
 
     type_t type() const;
 
+    tooska::core::variant data() const;
     int to_int() const;
     float to_float() const;
     bool to_bool() const;
     std::string to_string() const;
-    json_object *to_object();
-    json_array *to_array();
-
-//    template<class T>
-//    T to();
-
-//    template<>
-//    int to<int>();
-
-//    template<>
-//    float to<float>();
-
-//    template<>
-//    std::string to<std::string>();
+    object *to_object();
+    array *to_array();
 
 protected:
     type_t _type;
@@ -67,12 +55,34 @@ protected:
 private:
     virtual void render(core::string_renderer &r);
 
-    friend class json_object;
-    friend class json_array;
-    friend class json_document;
+    friend class object;
+    friend class array;
+    friend class document;
     friend class tooska::serialization::token_serializer;
     friend class tooska::serialization::token_serializer_writer;
 };
+
+template <class T,
+         std::enable_if_t<std::is_integral<T>::value, int> = 0
+         >
+value *create(const T &t)
+{
+    return new value(static_cast<int>(t));
+}
+
+template <class T,
+          std::enable_if_t<std::is_floating_point<T>::value, int> = 0
+          >
+value *create(const T &t)
+{
+    return new value(static_cast<float>(t));
+}
+
+template <class T, typename std::enable_if<std::is_base_of<std::string, T>::value>::type* = nullptr>
+value *create(const T &t)
+{
+    return new value(static_cast<std::string>(t));
+}
 
 TOOSKA_END_NAMESPACE
 

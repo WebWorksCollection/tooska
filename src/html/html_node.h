@@ -105,6 +105,8 @@ public:
     void unwrap();
     void unwrap_child(html_tag *child);
 
+    std::map<std::string, std::string> attributes() const;
+
 private:
     void append(core::string_renderer &r) override;
     void append_begin_tag(core::string_renderer &r);

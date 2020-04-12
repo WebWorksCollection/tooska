@@ -381,6 +381,11 @@ void style_tag::add_child(html_node *child)
     }
 }
 
+std::map<std::string, std::string> html_tag::attributes() const
+{
+    return _attributes;
+}
+
 void html_tag::remove()
 {
     _parent->remove_child(this);
